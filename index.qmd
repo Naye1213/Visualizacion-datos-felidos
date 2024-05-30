@@ -1,6 +1,6 @@
 ---
 title: "Visualización de datos de felidos de Costa Rica"
-author: "Nayely Araya Valerin"
+author: "Nayely Araya Valerin & Kris Morales Alvarado"
 format: html
 toc: true
 lang: es
@@ -42,6 +42,37 @@ felidos <-
       "Y_POSSIBLE_NAMES=decimalLatitude"),
     quiet = TRUE)
 ```
+
+## Simplificación de geometrías de provincias
+
+```{r}
+#| label: simplificacion-provincias
+
+provincias <-
+  provincias |>
+  st_simplify(dTolerance = 500, preserveTopology = TRUE)
+
+# Mapa de la capa de provincias con simplificación y sin preservación de topología
+plot(
+  provincias$geometry,
+  extent = st_bbox(c(xmin = 280000, xmax = 660000, ymin = 880000, ymax= 1250000)),  
+  main = "Provincias simplificadas sin preservación de topología",
+  axes = TRUE,
+  graticule = TRUE)
+```
+
+# Cambio de sistemas de coordenadas
+
+```{r}
+#| label: cambio-crs
+
+provincias <-
+  provincias |>
+  st_transform(4326)
+
+st_crs(felidos) <- 4326
+```
+
 
 # Visualización
 
@@ -103,6 +134,37 @@ felidos |>
 ggplotly(grafico_ggplot2) |> config(locate = "es")
 ```
 
+## Mapa
+
+```{r}
+#| label: mapa-felidos
+#| code-fold: true
+
+leaflet() |>
+  setView(lng = -84.0, lat = 10, zoom = 7) |>
+  addTiles(group = "Mapa de calles") |>
+  addProviderTiles(providers$OpenTopoMap, "Mapa topográfico") |>
+  addPolygons(
+    data = provincias,
+    color = "red",
+    fillColor = "transparent",
+    weight = 1.5,
+    stroke = TRUE,
+    group = "Provincias"
+  ) |>
+  addCircleMarkers(
+    data = felidos,
+    color = "orange",
+    stroke = FALSE,
+    radius = 4,
+    opacity = 0.5,
+    group = "Félidos"
+  ) |>
+  addLayersControl(
+    baseGroups = c("Mapa de calles", "Mapa topográfico"),
+    overlayGroups = c("Provincias", "Félidos")
+  )
+```
 
 
 
