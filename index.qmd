@@ -1,0 +1,102 @@
+---
+title: "Visualización de datos de felidos de Costa Rica"
+author: "Nayely Araya Valerin"
+format: html
+toc: true
+lang: es
+theme: yeti
+---
+
+# Carga de paquetes
+
+```{r}
+#| label: carga-paquete
+#| message: false
+#| warning: false
+
+library(DT)
+library(tidyverse)
+library(sf)
+library(plotly)
+library(leaflet)
+library(leaflet.extras)
+library(leafem)
+```
+
+# Carga de datos
+
+```{r}
+#| label: carga-datos
+#| message: false
+#| warning: false
+
+provincias <-
+  st_read("provincias.geojson",
+    quiet = TRUE)
+
+felidos <-
+  st_read(
+    "felidos.csv",
+    options = c(
+      "X_POSSIBLE_NAMES=decimalLongitude", 
+      "Y_POSSIBLE_NAMES=decimalLatitude"),
+    quiet = TRUE)
+```
+
+# Visualización
+
+## Tabla
+
+```{r}
+#| label: tabla-felidos
+#| message: false
+#| warning: false
+
+felidos |>
+  st_drop_geometry() |>
+  select(species, eventDate, stateProvince, locality, decimalLongitude, decimalLatitude) |>
+  datatable(
+    colnames = c("Especie","Fecha","Provincia","Localidad","Longitud","Latitud"),
+    options = list(
+    pageLength = 5,
+    language = list(url = "//cdn.datatale.net/plug-ins/1.10.11/i18n/Spanish.json")
+  ))
+```
+
+## Gráficos
+
+```{r}
+#| label: graficos-registros-especie
+#| message: false
+#| warning: false
+
+grafico_ggplot2 <-
+felidos |>
+  ggplot(aes(x = fct_infreq(species))) +
+  geom_bar() +
+  ggtitle("Cantidad de registros por especie") +
+  xlab("Especie") +
+  ylab("Cantidad de registros") +
+  theme_replace()
+
+ggplotly(grafico_ggplot2) |> config(locate = "es")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
